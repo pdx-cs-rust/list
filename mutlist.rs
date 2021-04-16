@@ -11,7 +11,8 @@ struct Node<T> {
 /// A singly-linked list.
 pub struct List<T>(Option<Node<T>>);
 
-struct IntoIter<T> {
+/// An iterator returning successive data items from a list.
+pub struct IntoIter<T> {
     cur: Option<Node<T>>,
 }
 
@@ -54,10 +55,16 @@ impl<'a, T> Iterator for IterMut<'a, T> {
     }
 }
 
+impl<T> Default for List<T> {
+    fn default() -> Self {
+        Self(None)
+    }
+}
+
 impl<T> List<T> {
     /// A new empty list.
     pub fn new() -> Self {
-        List(None)
+        Self::default()
     }
 
     /// A new list containing `data`. Order is left-to-right: `data[0]` will be the head.
@@ -84,11 +91,6 @@ impl<T> List<T> {
         Some(data)
     }
 
-    /// Convert this list into an iterator over its data.
-    pub fn into_iter(self) -> impl Iterator<Item = T> {
-        IntoIter { cur: self.0 }
-    }
-
     /// An iterator over references to this data.
     pub fn iter(&self) -> impl Iterator<Item = &T> {
         Iter { cur: self.0.as_ref() }
@@ -97,6 +99,15 @@ impl<T> List<T> {
     /// An iterator over mutable references to this data.
     pub fn iter_mut(&mut self) -> impl Iterator<Item = &mut T> {
         IterMut { cur: self.0.as_mut() }
+    }
+}
+
+impl<T> IntoIterator for List<T> {
+    type Item = T;
+    type IntoIter = IntoIter<T>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        IntoIter { cur: self.0 }
     }
 }
 
