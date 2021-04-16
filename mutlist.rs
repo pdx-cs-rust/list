@@ -8,6 +8,7 @@ struct Node<T> {
     next: Option<Box<Node<T>>>,
 }
 
+/// A singly-linked list.
 pub struct List<T>(Option<Node<T>>);
 
 struct IntoIter<T> {
@@ -54,23 +55,27 @@ impl<'a, T> Iterator for IterMut<'a, T> {
 }
 
 impl<T> List<T> {
+    /// A new empty list.
     pub fn new() -> Self {
         List(None)
     }
 
-    pub fn from_vec(data: Vec<T>) -> Self {
+    /// A new list containing `data`. Order is left-to-right: `data[0]` will be the head.
+    pub fn from_vec(mut data: Vec<T>) -> Self {
         let mut result = List::new();
-        for d in data {
+        while let Some(d) = data.pop() {
             result.push(d);
         }
         result
     }
 
+    /// Push `data` onto the head of this list.
     pub fn push(&mut self, data: T) {
         let next = self.0.take().map(Box::new);
         (*self).0 = Some(Node { data, next });
     }
 
+    /// Pop from the head of this list. Return `Some` element datum, or `None` if empty.
     pub fn pop(&mut self) -> Option<T> {
         let head = self.0.take()?;
         let next = head.next.map(|node| *node);
@@ -79,16 +84,19 @@ impl<T> List<T> {
         Some(data)
     }
 
+    /// Convert this list into an iterator over its data.
     pub fn into_iter(self) -> impl Iterator<Item = T> {
         let cur = self.0;
         IntoIter { cur }
     }
 
+    /// An iterator over references to this data.
     pub fn iter(&self) -> impl Iterator<Item = &T> {
         let cur = self.0.as_ref();
         Iter { cur }
     }
 
+    /// An iterator over mutable references to this data.
     pub fn iter_mut(&mut self) -> impl Iterator<Item = &mut T> {
         let cur = self.0.as_mut();
         IterMut { cur }
@@ -102,14 +110,14 @@ fn test_push_pop() {
     while let Some(d) = list.pop() {
         result.push(d);
     }
-    assert_eq!(result, &[3, 2, 1]);
+    assert_eq!(result, &[1, 2, 3]);
 }
 
 #[test]
 fn test_iter() {
     let list = List::from_vec(vec![1, 2, 3]);
     let result: Vec<u8> = list.iter().cloned().collect();
-    assert_eq!(result, &[3, 2, 1]);
+    assert_eq!(result, &[1, 2, 3]);
 }
 
 #[test]
@@ -119,5 +127,5 @@ fn test_iter_mut() {
         *d = 4 - *d;
     }
     let result: Vec<u8> = list.iter().cloned().collect();
-    assert_eq!(result, &[1, 2, 3]);
+    assert_eq!(result, &[3, 2, 1]);
 }
