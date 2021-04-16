@@ -1,4 +1,7 @@
-// https://rust-unofficial.github.io/too-many-lists/second.html
+/// Example singly-linked list implementation.
+
+/// [Learn Rust With Entirely Too Many Linked Lists](https://rust-unofficial.github.io/too-many-lists/second.html)
+/// served as a valuable reference for this code.
 
 struct Node<T> {
     data: T,
@@ -50,50 +53,71 @@ impl<'a, T> Iterator for IterMut<'a, T> {
     }
 }
 
-impl<T> IntoIter<T> {
-    fn new(cur: Option<Box<Node<T>>>) -> Self {
-        IntoIter { cur }
-    }
-}
-
-impl<'a, T> Iter<'a, T> {
-    fn new(cur: Option<&'a Node<T>>) -> Self {
-        Iter { cur }
-    }
-}
-
-impl<'a, T> IterMut<'a, T> {
-    fn new(cur: Option<&'a mut Node<T>>) -> Self {
-        IterMut { cur }
-    }
-}
-
 impl<T> List<T> {
     pub fn new() -> Self {
         List(None)
     }
 
+    pub fn from_vec(data: Vec<T>) -> Self {
+        let mut result = List::new();
+        for d in data {
+            result.push(d);
+        }
+        result
+    }
+
     pub fn push(&mut self, data: T) {
-        let next = self.0.take();
-        *self = List(Some(Box::new(Node { data, next })));
+        let next = self.0.take().map(Box::new);
+        (*self).0 = Some(Node { data, next });
     }
 
     pub fn pop(&mut self) -> Option<T> {
         let head = self.0.take()?;
+        let next = head.next.map(|node| *node);
         let data = head.data;
-        *self = List(head.next);
+        (*self).0 = next;
         Some(data)
     }
 
     pub fn into_iter(self) -> impl Iterator<Item = T> {
-        IntoIter::new(self.0)
+        let cur = self.0;
+        IntoIter { cur }
     }
 
     pub fn iter(&self) -> impl Iterator<Item = &T> {
-        Iter::new(self.0.as_deref())
+        let cur = self.0.as_ref();
+        Iter { cur }
     }
 
     pub fn iter_mut(&mut self) -> impl Iterator<Item = &mut T> {
-        IterMut::new(self.0.as_deref_mut())
+        let cur = self.0.as_mut();
+        IterMut { cur }
     }
+}
+
+#[test]
+fn test_push_pop() {
+    let mut list = List::from_vec(vec![1, 2, 3]);
+    let mut result = Vec::new();
+    while let Some(d) = list.pop() {
+        result.push(d);
+    }
+    assert_eq!(result, &[3, 2, 1]);
+}
+
+#[test]
+fn test_iter() {
+    let list = List::from_vec(vec![1, 2, 3]);
+    let result: Vec<u8> = list.iter().cloned().collect();
+    assert_eq!(result, &[3, 2, 1]);
+}
+
+#[test]
+fn test_iter_mut() {
+    let mut list = List::from_vec(vec![1, 2, 3]);
+    for d in list.iter_mut() {
+        *d = 4 - *d;
+    }
+    let result: Vec<u8> = list.iter().cloned().collect();
+    assert_eq!(result, &[1, 2, 3]);
 }
