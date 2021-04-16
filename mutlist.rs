@@ -5,10 +5,10 @@ struct Node<T> {
     next: Option<Box<Node<T>>>,
 }
 
-pub struct List<T>(Option<Box<Node<T>>>);
+pub struct List<T>(Option<Node<T>>);
 
 struct IntoIter<T> {
-    cur: Option<Box<Node<T>>>,
+    cur: Option<Node<T>>,
 }
 
 struct Iter<'a, T> {
@@ -22,9 +22,10 @@ struct IterMut<'a, T> {
 impl<T> Iterator for IntoIter<T> {
     type Item = T;
     fn next(&mut self) -> Option<Self::Item> {
-        let head = self.cur.take()?;
+        let mut head = self.cur.take()?;
         let data = head.data;
-        *self = IntoIter::new(head.next);
+        let cur = head.next.take().map(|node| *node);
+        *self = IntoIter { cur };
         Some(data)
     }
 }
