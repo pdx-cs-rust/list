@@ -2,6 +2,7 @@
 
 /// [Learn Rust With Entirely Too Many Linked Lists](https://rust-unofficial.github.io/too-many-lists/second.html)
 /// served as a valuable reference for this code.
+use std::iter::FromIterator;
 
 struct Node<T> {
     data: T,
@@ -112,6 +113,16 @@ impl<T> IntoIterator for List<T> {
 
     fn into_iter(self) -> Self::IntoIter {
         IntoIter { cur: self.0 }
+    }
+}
+
+impl<T> FromIterator<T> for List<T> {
+    fn from_iter<I>(iter: I) -> Self
+    where
+        I: IntoIterator<Item = T>,
+    {
+        let data: Vec<T> = iter.into_iter().collect();
+        List::from_vec(data)
     }
 }
 
