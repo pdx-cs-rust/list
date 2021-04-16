@@ -152,3 +152,10 @@ fn test_iter_mut() {
     let result: Vec<u8> = list.iter().cloned().collect();
     assert_eq!(result, &[3, 2, 1]);
 }
+
+#[test]
+fn test_from_iterator() {
+    let list: List<u8> = vec![1, 2, 3].into_iter().collect();
+    let vec: Vec<u8> = list.into_iter().collect();
+    assert_eq!(vec, &[1, 2, 3]);
+}
