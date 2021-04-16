@@ -93,12 +93,16 @@ impl<T> List<T> {
 
     /// An iterator over references to this data.
     pub fn iter(&self) -> impl Iterator<Item = &T> {
-        Iter { cur: self.0.as_ref() }
+        Iter {
+            cur: self.0.as_ref(),
+        }
     }
 
     /// An iterator over mutable references to this data.
     pub fn iter_mut(&mut self) -> impl Iterator<Item = &mut T> {
-        IterMut { cur: self.0.as_mut() }
+        IterMut {
+            cur: self.0.as_mut(),
+        }
     }
 }
 
